@@ -259,7 +259,7 @@ type InnerNode<T> = TreeNode<T> &
 
 type MapNode = <A, T extends TreeNode<A>, U>(node: T, f: (arg: A) => U) => TreeNode<U>
 
-let mapNode: MapNode = (node, f) => {
+const mapNode: MapNode = (node, f) => {
     return {
         ...node,
         value: f(node.value)
@@ -267,6 +267,20 @@ let mapNode: MapNode = (node, f) => {
 };
 
 
+// Generics with defaults
+type MyCalculation<T = number> = {
+    result: T,
+    operation: (a: T, b: T) => T
+};
+// and after that:
+let myCalculation1: MyCalculation<string> = {
+    result: '5',
+    operation: (a, b) => a + b
+};
+const myCalculation2: MyCalculation = {
+    result: 5, 
+    operation: (a, b) => a + b
+};
 
-
-
+// Won't compile, because default type is number but string is passed.
+// let myCalculation3: MyCalculation = {result: '5', operation: (a, b) => a + b};
