@@ -67,3 +67,21 @@ class Child implements IB {
 // What to use and when?
 // If an IMPLEMENTATION is shared across multiple classes, use inheritance
 // If you just need some typesafety - use interfaces.
+
+
+// How to prevent people from extending your class?
+// Mark constructor private and instantiate it from static fabric!
+class NonExtensible {
+    arg: string
+
+    public constructor(arg: string) { this.arg = arg; }
+
+    static create(arg: string) {
+        return new NonExtensible(arg);    
+    }
+};
+
+// class BadExtension extends NonExtensible {
+//     // cannot extend, class constructor is marked as private!
+// };
+
