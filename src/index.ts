@@ -5,7 +5,6 @@ function a(arg: number) {
 a(2); // typechecks
 // does not typecheck: a('z'); 
 
-
 // any
 function a2(arg: any) {
     return arg;
@@ -30,7 +29,7 @@ a3({arg: 'arg'}); // both typecheck! But you can't do anything illegal with unkn
 const typeLiteral = true // try to hover on me to check my type!
 // the type of `typeLiteral` is a type literal. The most narrow type is inferred.
 // Even look at this:
-let doubleTypeLiteral : 26.128 = 26.128;
+const doubleTypeLiteral : 26.128 = 26.128;
 // let doubleTypeLiteral : 123.123 = 26.128; // Won't compile with a funny message!
 
 
@@ -43,7 +42,7 @@ let objInferred = {
     b: 'abc'
 };
 
-// Type alias: 
+// Type alias: (with an index signature):
 type airplaneSeats = {[seatNumber: string]: string};
 // Type aliases are block-scoped, just as let and const variables.
 
@@ -181,9 +180,93 @@ enum Language {                //   enum Language {
 //
 
 
-// page 72
-// function a4(arg?: string, arg2: string): string {
-//     return arg || 'none';
+// Functions!
+// Optionals in functions are just like in objects, but you cannot specify optional before 
+// non-optional (because otherwise it would be impossible to judge what are you supplying)
+function optFunction(arg: string, arg2?: string): string {
+    return arg || 'none'; // compiles!
+}
+// function optFunction(arg?: string, arg2: string): string {
+//     return arg || 'none'; // won't compile!
 // }
+//
+
+// Variadic functions
+function iTakeAnyNumberOfArgs(...t: number[]): number {
+    return t.reduce((pr, cur) => pr + cur, 0);
+} // logically, you can have only one rest parameter and it has to come last, otherwise 
+// again ambiguity, what arguments should go to what parameters.
+
+// What is the type of the function as an object?
+type mySumType = (a: number, b: number) => number;
+let sum: mySumType = (a, b) => { // we don't have to annotate a and b here explicitly
+    return a + b;
+} 
+
+// Using `this` within functions
+function iAmUsingThisSafely(this: Date): number {
+    return this.getDay();
+}
+// function iAmTotallyUnsafe(): number {
+//     return this.getDay(); // won't compile! 
+// }
+
+
+// Introducing alternative function type syntax:
+type myOtherSumType = {
+    (a: number, b: number): number 
+};
+let sum2: myOtherSumType = (a, b) => a + b;
+
+// Overloading functions
+// I tried to mess with it but didn't get it. Google later
+// The way overloading works:
+// type myCreatedElem = {
+//     (a: number): string
+//     (a: string): string
+//     (a: any): string
+// }
+//
+// let myCreateElem : myCreatedElem = (a: number | string | any): string => {
+//     return a.toString();
+// };
+// let myCreateElem : myCreatedElem = (a: string): number => {
+//     return '5';
+// };
+
+
+// Polymorphism: aka Java generics
+type MyFilter = {
+    <T>(array: T[], predicate: (arg: T) => boolean): T[]
+};
+
+let myFilter: MyFilter = (a, p) => {
+    return a.filter(p);
+};
+
+myFilter([1, 2, 3], (a) => a % 2 == 0);
+myFilter(['a', 'b', 'c'], (a) => a.startsWith('c')); // yay!
+// The way this works is: typescript infers the first T it sees and
+// substitutes all the remaining ones. So the only thing generics really
+// do is enforce some equality of types within parameters\return value set.
+
+
+// Example of bounded polymorphism:
+type TreeNode<T>  = { value : T };
+type LeafNode<T>  = TreeNode<T> & { isLeaf : true };
+type InnerNode<T> = TreeNode<T> & 
+    { children : TreeNode<T> | [TreeNode<T>, TreeNode<T>] };
+
+type MapNode = <A, T extends TreeNode<A>, U>(node: T, f: (arg: A) => U) => TreeNode<U>
+
+let mapNode: MapNode = (node, f) => {
+    return {
+        ...node,
+        value: f(node.value)
+    };
+};
+
+
+
 
 
